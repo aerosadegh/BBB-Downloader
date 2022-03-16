@@ -9,7 +9,7 @@ def merge(
     input2: str = "deskshare.mp4",
     output: str = "presentation.mp4",
 ):
-    with open('test.log', 'wb') as f:
+    with open('test.log', 'wb') as fout:
         process = subprocess.Popen(
             f"ffmpeg -i {input1} -i {input2} -c copy {output} -y".split(),
             stdout=subprocess.PIPE,
@@ -60,7 +60,10 @@ class Download:
         return Download._to_download(filename, link)
 
     def do_merge(self):
-        ...
+        merge(
+            os.path.join(self.path, "webcams.mp4"),
+            os.path.join(self.path, "deskshare.mp4"),
+        )
 
 
 # link = "https://conf2.anisa.co.ir/presentation/" + "7c73890a6bb99b872fce98138ab61735d96e3ddb-1646888881275" + "/video/webcams.mp4"
