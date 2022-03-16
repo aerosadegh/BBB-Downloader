@@ -1,0 +1,55 @@
+[tool.isort]
+profile = "black"
+skip_glob = ["**/.git*", "**/.env*", "**/venv*", "**/venvwsl*","**/docs*","**/migrations*"]
+force_single_line = false
+line_length = 100
+# verbose = true
+skip_gitignore = true
+color_output = true
+
+[tool.pylint.messages_control]
+max-line-length = 100
+disable = [
+#   "import-outside-toplevel",
+#   "broad-except",
+#   "unused-import",
+#   "unused-variable",
+  "missing-docstring",
+#   "unused-argument",
+#   "invalid-name",
+#   "no-value-for-parameter",
+#   "no-member",
+#   "no-self-use",
+#   "line-too-long",
+#   "protected-access",
+#   "too-few-public-methods",
+]
+
+[tool.pylint.design]
+# limiting the number of returns might discourage
+# the use of guard clauses. So we increase the
+# allowed number of returns from 6 to 8
+max-returns = 8
+# Maximum number of arguments for function / method.
+max-args=15
+
+max-parents=15
+
+# Maximum number of attributes for a class (see R0902).
+max-attributes=15
+
+# Maximum number of boolean expressions in an if statement.
+max-bool-expr=5
+
+# Maximum number of locals for function / method body.
+max-locals=25
+
+# Maximum number of statements in function / method body.
+max-statements=50
+
+# Minimum number of public methods for a class (see R0903).
+min-public-methods=1
+
+
+[tool.black]
+line-length = 100
