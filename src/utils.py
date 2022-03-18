@@ -32,22 +32,33 @@ class Download:
         file_path,
         link,
     ):
-        with open(file_path, "wb") as fout:
-            print(f"Downloading {file_path}")
-            response = requests.get(link, stream=True)
-            total_length = response.headers.get("content-length")
+        print(f"Downloading {file_path}")
+        response = requests.get(link, stream=True)
+        total_length = response.headers.get("content-length")
+        if total_length is None:  # no content length header
+            print(response.content)
+        else:
+            total_length = int(total_length)
+            DO_DOWNLOAD = True
+            if os.path.exists(file_path):
+                print(os.path.getsize(file_path) == total_length)
+                if os.path.getsize(file_path) == total_length:
+                    DO_DOWNLOAD = False
+                    yield (total_length, total_length)
 
-            if total_length is None:  # no content length header
-                fout.write(response.content)
-            else:
-                dld = 0
-                total_length = int(total_length)
-                print(total_length, f"{total_length//1024//1024}MB")
-                for data in response.iter_content(chunk_size=4096):
-                    dld += len(data)
-                    fout.write(data)
-                    # done = int(100 * dld / total_length)
-                    yield (dld, total_length)
+            if DO_DOWNLOAD:
+                with open(file_path, "wb") as fout:
+                    if total_length is None:  # no content length header
+                        fout.write(response.content)
+                    else:
+                        dld = 0
+                        total_length = int(total_length)
+                        print(total_length, f"{total_length//1024//1024}MB")
+                        for data in response.iter_content(chunk_size=4096):
+                            dld += len(data)
+                            fout.write(data)
+                            # done = int(100 * dld / total_length)
+                            yield (dld, total_length)
 
     def _get_webcams(self):
         link = f"{self.base_url}{self.sessionid}/video/webcams.mp4"
@@ -63,6 +74,7 @@ class Download:
         merge(
             os.path.join(self.path, "webcams.mp4"),
             os.path.join(self.path, "deskshare.mp4"),
+            os.path.join(self.path, "presentation.mp4"),
         )
 
 

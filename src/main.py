@@ -38,14 +38,17 @@ class ProcessDownload(QThread):
         download = Download(
             self.params["dwpath_led"].rstrip("/") + "/",
             self.params["sessionid"],
-            self.params["dwpath_led"]
+            self.params["target_led"]
         )
         # num_parts = 0
+        FILE = ["webcams", "deskshare"]
 
-        for itr in download.get_iter_videos():
+        for ii, itr in enumerate(download.get_iter_videos()):
             for (dnl, totallength) in itr:
-                self.count_changed.emit((dnl, totallength,)) # f"{old_file} split to {num_parts} part", "", 30000)) dnl / totallength
-
+                self.count_changed.emit((dnl, totallength, FILE[ii])) # f"{old_file} split to {num_parts} part", "", 30000)) dnl / totallength
+        self.count_changed.emit((1, 1, "Merging ..."))
+        download.do_merge()
+        self.count_changed.emit((0, 1, "Done!"))
 
         # for i, filepath in enumerate(files):
         #     if i == 0:
@@ -199,9 +202,33 @@ class UiMainWindow2(Ui_MainWindow):
         self.target_led.setText(self.trg_path.replace("/", "\\"))
         self.load_settings()
 
+    
+    def on_count_changed(self, value):
+        # print(value[0], type(value[0]), value[1], type(value[1]))
+        # self.pbar.setFormat("%.2f %%" % value[0]/value[1])
+
+        val = int(value[0]/value[1]*100)
+        self.pbar.setValue(val)
+        self.task_btn.progress().setValue(val)
+
+        self.statusbar.showMessage(f" {value[0]//1024//1024} of {value[1]//1024//1024} MB  {value[2]}", 70000)
+        if value[2] == "Done!":
+            self.download_btn.setText("Download")
+
     def on_donwload_clicked(self, clicked):
         print("Clicked!")
+        self.settings.update(
+            {
+                "sessionid": self.sessionid_led.text(),
+                "target_led": self.target_led.text(),
+            }
+        )
+        self.download_btn.setText("Cancel")
         print(self.settings,)
+        self.download_process = ProcessDownload(self.settings)
+        self.download_process.count_changed.connect(self.on_count_changed)
+        self.download_process.start()
+
 
 
 if __name__ == "__main__":
