@@ -22,6 +22,8 @@ class Download:
         self.base_url = base_url.rstrip("/") + "/"  # settings["dwpath_led"].rstrip("/") + "/"
         self.sessionid = sessionid  # settings["sessionid"]
         self.path = path  # settings["dwpath_led"]
+        if not os.path.exists(path):
+            os.makedirs(path)
 
     def get_iter_videos(self):
         yield self._get_webcams()

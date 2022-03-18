@@ -36,9 +36,9 @@ class ProcessDownload(QThread):
     def run(self):
 
         download = Download(
-            self.params["dwpath_led"].rstrip("/") + "/",
+            self.params["dwpath_led"],
             self.params["sessionid"],
-            self.params["target_led"]
+            os.path.join(self.params["target_led"], self.params["sessionno"])
         )
         # num_parts = 0
         FILE = ["webcams", "deskshare"]
@@ -211,7 +211,7 @@ class UiMainWindow2(Ui_MainWindow):
         self.pbar.setValue(val)
         self.task_btn.progress().setValue(val)
 
-        self.statusbar.showMessage(f" {value[0]//1024//1024} of {value[1]//1024//1024} MB  {value[2]}", 70000)
+        self.statusbar.showMessage(f" {value[0]/1024/1024:.2f}MB/{value[1]/1024/1024:.2f} MB  {value[2]}", 70000)
         if value[2] == "Done!":
             self.download_btn.setText("Download")
 
@@ -220,6 +220,7 @@ class UiMainWindow2(Ui_MainWindow):
         self.settings.update(
             {
                 "sessionid": self.sessionid_led.text(),
+                "sessionno": self.sessionno_sp.text(),
                 "target_led": self.target_led.text(),
             }
         )
