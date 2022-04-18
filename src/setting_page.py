@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '.\settings.ui'
+# Form implementation generated from reading ui file '.\src\settings.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.6
 #
@@ -19,20 +19,30 @@ class Ui_Dialog(object):
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.gridLayout = QtWidgets.QGridLayout()
         self.gridLayout.setObjectName("gridLayout")
-        self.dwpath_led = QtWidgets.QLineEdit(Dialog)
-        self.dwpath_led.setObjectName("dwpath_led")
-        self.gridLayout.addWidget(self.dwpath_led, 0, 1, 1, 1)
+        self.ext_lbl = QtWidgets.QLabel(Dialog)
+        self.ext_lbl.setObjectName("ext_lbl")
+        self.gridLayout.addWidget(self.ext_lbl, 1, 0, 1, 1)
         self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
-        self.gridLayout.addWidget(self.buttonBox, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.buttonBox, 2, 1, 1, 1)
+        self.dwpath_led = QtWidgets.QLineEdit(Dialog)
+        self.dwpath_led.setObjectName("dwpath_led")
+        self.gridLayout.addWidget(self.dwpath_led, 0, 1, 1, 1)
         self.dpath_lbl = QtWidgets.QLabel(Dialog)
         self.dpath_lbl.setObjectName("dpath_lbl")
         self.gridLayout.addWidget(self.dpath_lbl, 0, 0, 1, 1)
+        self.ext_cb = QtWidgets.QComboBox(Dialog)
+        self.ext_cb.setObjectName("ext_cb")
+        self.ext_cb.addItem("")
+        self.ext_cb.addItem("")
+        self.ext_cb.addItem("")
+        self.gridLayout.addWidget(self.ext_cb, 1, 1, 1, 1)
         self.gridLayout_2.addLayout(self.gridLayout, 0, 0, 1, 1)
 
         self.retranslateUi(Dialog)
+        self.ext_cb.setCurrentIndex(1)
         self.buttonBox.accepted.connect(Dialog.accept) # type: ignore
         self.buttonBox.rejected.connect(Dialog.reject) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -40,7 +50,11 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        self.ext_lbl.setText(_translate("Dialog", "Extension"))
         self.dpath_lbl.setText(_translate("Dialog", "Download Path"))
+        self.ext_cb.setItemText(0, _translate("Dialog", "Auto Check"))
+        self.ext_cb.setItemText(1, _translate("Dialog", "mp4"))
+        self.ext_cb.setItemText(2, _translate("Dialog", "webm"))
 
 
 if __name__ == "__main__":

@@ -16,10 +16,14 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="dwpath_led"/>
+     <item row="1" column="0">
+      <widget class="QLabel" name="ext_lbl">
+       <property name="text">
+        <string>Extension</string>
+       </property>
+      </widget>
      </item>
-     <item row="1" column="1">
+     <item row="2" column="1">
       <widget class="QDialogButtonBox" name="buttonBox">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -29,11 +33,36 @@
        </property>
       </widget>
      </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="dwpath_led"/>
+     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="dpath_lbl">
        <property name="text">
         <string>Download Path</string>
        </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="ext_cb">
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>Auto Check</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>mp4</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>webm</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
