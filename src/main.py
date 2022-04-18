@@ -36,7 +36,10 @@ class ProcessDownload(QThread):
     def run(self):
 
         download = Download(
-            self.params["dwpath_led"], self.params["sessionid"], os.path.join(self.params["target_led"], self.params["sessionno"])
+            base_url=self.params["dwpath_led"],
+            sessionid=self.params["sessionid"],
+            path=os.path.join(self.params["target_led"], self.params["sessionno"]),
+            extension=self.params["ext_cb"],
         )
         # num_parts = 0
         files = ["webcams", "deskshare"]
@@ -176,7 +179,7 @@ class UiMainWindow2(Ui_MainWindow):
         # if set(settings.keys()) > set(allowd_kw.keys()):
         #     # raise ValueError
         #     miss_setting = set(allowd_kw.keys()) - set(settings.keys())
-            # print("miss_settings:", miss_setting)
+        # print("miss_settings:", miss_setting)
         for k, v in allowd_kw.items():
             self.settings[v] = settings[k]
 
