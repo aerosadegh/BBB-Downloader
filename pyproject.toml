@@ -2,26 +2,29 @@
 profile = "black"
 skip_glob = ["**/.git*", "**/.env*", "**/venv*", "**/venvwsl*","**/docs*","**/migrations*"]
 force_single_line = false
-line_length = 100
+line_length = 140
 # verbose = true
 skip_gitignore = true
 color_output = true
 
 [tool.pylint.messages_control]
-max-line-length = 100
+max-line-length = 140
 disable = [
 #   "import-outside-toplevel",
-#   "broad-except",
+  "broad-except",
 #   "unused-import",
 #   "unused-variable",
   "missing-docstring",
-#   "unused-argument",
-#   "invalid-name",
+  "c-extension-no-member",
+  "no-name-in-module",
+  "f-string-without-interpolation",
+  "unused-argument",
+  "invalid-name",
 #   "no-value-for-parameter",
-#   "no-member",
+  "no-member",
 #   "no-self-use",
-#   "line-too-long",
-#   "protected-access",
+  "line-too-long",
+  "protected-access",
 #   "too-few-public-methods",
 ]
 
@@ -52,4 +55,4 @@ min-public-methods=1
 
 
 [tool.black]
-line-length = 100
+line-length = 140
