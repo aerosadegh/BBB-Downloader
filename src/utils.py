@@ -9,11 +9,11 @@ def merge(
     input2: str = "deskshare.mp4",
     output: str = "presentation.mp4",
 ):
-    with open('test.log', 'wb') as fout:
-        process = subprocess.Popen(
-            f"ffmpeg -i {input1} -i {input2} -c copy {output} -y".split(),
-            stdout=subprocess.PIPE,
-        )
+    # with open('test.log', 'wb') as fout:
+    process = subprocess.Popen(
+        f"ffmpeg -i {input1} -i {input2} -c copy {output} -y".split(),
+        stdout=subprocess.PIPE,
+    )
     return process.communicate()[0]
 
 
@@ -33,28 +33,31 @@ class Download:
     def _to_download(
         file_path,
         link,
+        resume_byte_pos=None,
     ):
         print(f"Downloading {file_path}")
-        response = requests.get(link, stream=True)
+        headers = {"Range": f"bytes={resume_byte_pos}-"} if resume_byte_pos is not None else None
+        print("headers:", headers)
+        response = requests.get(link, stream=True, headers=headers)
         total_length = response.headers.get("content-length")
         if total_length is None:  # no content length header
             print(response.content)
         else:
             total_length = int(total_length)
-            DO_DOWNLOAD = True
+            download_flag = True
             if os.path.exists(file_path):
                 print(os.path.getsize(file_path) == total_length)
                 if os.path.getsize(file_path) == total_length:
-                    DO_DOWNLOAD = False
+                    download_flag = False
                     yield (total_length, total_length)
 
-            if DO_DOWNLOAD:
-                with open(file_path, "wb") as fout:
+            if download_flag:
+                with open(file_path, "ab") as fout:
                     if total_length is None:  # no content length header
                         fout.write(response.content)
                     else:
-                        dld = 0
-                        total_length = int(total_length)
+                        dld = 0 if resume_byte_pos is None else resume_byte_pos
+                        total_length = int(total_length) if resume_byte_pos is None else int(total_length) + resume_byte_pos
                         print(total_length, f"{total_length//1024//1024}MB")
                         for data in response.iter_content(chunk_size=4096):
                             dld += len(data)
@@ -63,14 +66,22 @@ class Download:
                             yield (dld, total_length)
 
     def _get_webcams(self):
-        link = f"{self.base_url}{self.sessionid}/video/webcams.mp4"
+        link = f"{self.base_url}{self.sessionid}/video/webcams.webm"   # Choice in Setting!
+        print("link: ", link)
         filename = os.path.join(self.path, "webcams.mp4")
-        return Download._to_download(filename, link)
+        resume_from = None
+        if os.path.exists(filename):
+            resume_from = os.path.getsize(filename)
+        return Download._to_download(filename, link, resume_byte_pos=resume_from)
 
     def _get_deskshare(self):
-        link = f"{self.base_url}{self.sessionid}/deskshare/deskshare.mp4"
+        link = f"{self.base_url}{self.sessionid}/deskshare/deskshare.webm"
+        print("link: ", link)
         filename = os.path.join(self.path, "deskshare.mp4")
-        return Download._to_download(filename, link)
+        resume_from = None
+        if os.path.exists(filename):
+            resume_from = os.path.getsize(filename)
+        return Download._to_download(filename, link, resume_byte_pos=resume_from)
 
     def do_merge(self):
         merge(
@@ -112,6 +123,8 @@ if __name__ == "__main__":
     if input().strip() != "":
         for itr in dl.get_iter_videos():
             for (dnl, totallength) in itr:
-                sys.stdout.write(f"\r[{'=' * int(100 * dnl / totallength)}"
-                f"{' ' * (100-int(100 * dnl / totallength))}] {int(100 * dnl / totallength):.0f}%")
+                sys.stdout.write(
+                    f"\r[{'=' * int(100 * dnl / totallength)}"
+                    f"{' ' * (100-int(100 * dnl / totallength))}] {int(100 * dnl / totallength):.0f}%"
+                )
                 sys.stdout.flush()
