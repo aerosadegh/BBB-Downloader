@@ -47,11 +47,11 @@ class ProcessDownload(QThread):
         for iii, itr in enumerate(download.get_iter_videos()):
             for (dnl, totallength) in itr:
                 self.count_changed.emit(
-                    (dnl, totallength, files[iii])
+                    (dnl, totallength, files[iii], iii+1)
                 )  # f"{old_file} split to {num_parts} part", "", 30000)) dnl / totallength
-        self.count_changed.emit((1, 1, "Merging ..."))
+        self.count_changed.emit((1, 1, "Merging ...", len(files)+1))
         download.do_merge()
-        self.count_changed.emit((0, 1, "Done!"))
+        self.count_changed.emit((0, 1, "Done!", len(files)+2))
 
         # for i, filepath in enumerate(files):
         #     if i == 0:
@@ -245,8 +245,8 @@ class UiMainWindow2(Ui_MainWindow):
         val = int(value[0] / value[1] * 100)
         self.pbar.setValue(val)
         self.task_btn.progress().setValue(val)
-
-        self.statusbar.showMessage(f" {value[0]/1024/1024:.2f}MB/{value[1]/1024/1024:.2f} MB  {value[2]}", 70000)
+        suff =  "/2" if value[3]<3 else f"/{value[3]}"
+        self.statusbar.showMessage(f"Stage {value[3]}{suff} :: {value[0]/1024/1024:.2f}MB/{value[1]/1024/1024:.2f} MB  {value[2]}", 70000)
         if value[2] == "Done!":
             self.download_btn.setText("Download")
 

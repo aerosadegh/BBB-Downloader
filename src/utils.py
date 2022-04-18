@@ -10,8 +10,10 @@ def merge(
     output: str = "presentation.mp4",
 ):
     # with open('test.log', 'wb') as fout:
+    cmd = f"""ffmpeg -i "{input1}" -i "{input2}" -c copy "{output}" -y"""
+    print(cmd)
     process = subprocess.Popen(
-        f"ffmpeg -i {input1} -i {input2} -c copy {output} -y".split(),
+        cmd.split(),
         stdout=subprocess.PIPE,
     )
     return process.communicate()[0]
@@ -75,7 +77,7 @@ class Download:
     def _get_webcams(self):
         link = f"{self.base_url}{self.sessionid}/video/webcams.{self.extension}"
         print("link: ", link)
-        filename = os.path.join(self.path, "webcams.mp4")
+        filename = os.path.join(self.path, f"webcams.{self.extension}")
         resume_from = None
         if os.path.exists(filename):
             resume_from = os.path.getsize(filename)
@@ -84,39 +86,23 @@ class Download:
     def _get_deskshare(self):
         link = f"{self.base_url}{self.sessionid}/deskshare/deskshare.{self.extension}"
         print("link: ", link)
-        filename = os.path.join(self.path, "deskshare.mp4")
+        filename = os.path.join(self.path, f"deskshare.{self.extension}")
         resume_from = None
         if os.path.exists(filename):
             resume_from = os.path.getsize(filename)
         return Download._to_download(filename, link, resume_byte_pos=resume_from)
 
     def do_merge(self):
+        print("MERGE:")
+        print(self.path)
         merge(
-            os.path.join(self.path, "webcams.mp4"),
-            os.path.join(self.path, "deskshare.mp4"),
+            os.path.join(self.path, f"webcams.{self.extension}"),
+            os.path.join(self.path, f"deskshare.{self.extension}"),
             os.path.join(self.path, "presentation.mp4"),
         )
 
 
-# link = "https://conf2.anisa.co.ir/presentation/" + "7c73890a6bb99b872fce98138ab61735d96e3ddb-1646888881275" + "/video/webcams.mp4"
-# file_name = "download.data"
-# with open(file_name, "wb") as f:
-#     print("Downloading %s" % file_name)
-#     response = requests.get(link, stream=True)
-#     total_length = response.headers.get('content-length')
 
-#     if total_length is None: # no content length header
-#         f.write(response.content)
-#     else:
-#         dl = 0
-#         total_length = int(total_length)
-#         print(total_length, f"{total_length//1024//1024}MB")
-#         for data in response.iter_content(chunk_size=4096):
-#             dl += len(data)
-#             f.write(data)
-#             done = int(100 * dl / total_length)
-#             sys.stdout.write(f"\r[{'=' * done}{' ' * (100-done)}] {done:.2f}%")
-#             sys.stdout.flush()
 
 
 if __name__ == "__main__":
