@@ -1,11 +1,11 @@
 import sys
 import os
 from dotenv import dotenv_values
-import time
-from PyQt5 import QtCore, QtGui, QtWidgets, QtWinExtras
+from PyQt5 import QtGui, QtWidgets, QtWinExtras
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from setting_page import Ui_Dialog as Setting
+from about_page import Ui_Dialog as About
 from main_page import Ui_MainWindow
 
 from utils import Download
@@ -36,16 +36,16 @@ class ProcessDownload(QThread):
     def run(self):
 
         download = Download(
-            self.params["dwpath_led"],
-            self.params["sessionid"],
-            os.path.join(self.params["target_led"], self.params["sessionno"])
+            self.params["dwpath_led"], self.params["sessionid"], os.path.join(self.params["target_led"], self.params["sessionno"])
         )
         # num_parts = 0
-        FILE = ["webcams", "deskshare"]
+        files = ["webcams", "deskshare"]
 
-        for ii, itr in enumerate(download.get_iter_videos()):
+        for iii, itr in enumerate(download.get_iter_videos()):
             for (dnl, totallength) in itr:
-                self.count_changed.emit((dnl, totallength, FILE[ii])) # f"{old_file} split to {num_parts} part", "", 30000)) dnl / totallength
+                self.count_changed.emit(
+                    (dnl, totallength, files[iii])
+                )  # f"{old_file} split to {num_parts} part", "", 30000)) dnl / totallength
         self.count_changed.emit((1, 1, "Merging ..."))
         download.do_merge()
         self.count_changed.emit((0, 1, "Done!"))
@@ -79,17 +79,31 @@ class ProcessDownload(QThread):
 
 
 class UiMainWindow2(Ui_MainWindow):
-    def extra_setupUi(self, MainWindow, windows):
+    """
+    main code
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.download_process = None
+        self.settings = None
+        self.trg_path = None
+        self.task_btn = None
+        self.statuspbar = None
+
+    def extra_setup_ui(self, MainWindow, windows):
+        """
+        Combine UI files
+        """
         icon = QtGui.QIcon()
-        icon.addPixmap(
-            QtGui.QPixmap(resource_path("assets/icon.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off
-        )
+        icon.addPixmap(QtGui.QPixmap(resource_path("assets/icon.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
 
         self.settings = dict()
         self.task_btn = QtWinExtras.QWinTaskbarButton(MainWindow)
         self.task_btn.setOverlayIcon(QtGui.QIcon("process.png"))
         self.actionSettings.triggered.connect(self.open_setting)
+        self.actionAbout_BBB_Downloader.triggered.connect(self.open_about)
 
         self.sessionid_led.textChanged.connect(self.update_sessionid)
         self.browse_btn.clicked.connect(self.on_set_target)
@@ -130,6 +144,7 @@ class UiMainWindow2(Ui_MainWindow):
     def save_settings(self, **kwargs):
         allowd_kw = {
             "dwpath_led": "DWPATH",
+            "ext_cb": "EXT",
         }
         if set(kwargs.keys()) > set(allowd_kw.values()):
             raise ValueError
@@ -139,13 +154,13 @@ class UiMainWindow2(Ui_MainWindow):
         if os.path.exists(filename):
             settings.update(dotenv_values(filename))
 
-        for k, v in kwargs.items():
-            settings[allowd_kw[k]] = v
+        for k, val in kwargs.items():
+            settings[allowd_kw[k]] = val
 
-        with open(filename, "w") as fout:
+        with open(filename, "w", encoding="utf-8") as fout:
             fout.write(f"### BBB Setting\n")
-            for k, v in settings.items():
-                fout.write(f"{k}={v}\n")
+            for k, val in settings.items():
+                fout.write(f"{k}={val}\n")
 
     def load_settings(self):
         filename = os.path.join(self.target_led.text(), ".bbbdwrc")
@@ -156,9 +171,12 @@ class UiMainWindow2(Ui_MainWindow):
             return
         allowd_kw = {
             "DWPATH": "dwpath_led",
+            "EXT": "ext_cb",
         }
-        if set(settings.keys()) > set(allowd_kw.keys()):
-            raise ValueError
+        # if set(settings.keys()) > set(allowd_kw.keys()):
+        #     # raise ValueError
+        #     miss_setting = set(allowd_kw.keys()) - set(settings.keys())
+            # print("miss_settings:", miss_setting)
         for k, v in allowd_kw.items():
             self.settings[v] = settings[k]
 
@@ -168,29 +186,44 @@ class UiMainWindow2(Ui_MainWindow):
         dialog.ui.setupUi(dialog)
 
         icon = QtGui.QIcon()
-        icon.addPixmap(
-            QtGui.QPixmap(resource_path("assets/setting.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off
-        )
+        icon.addPixmap(QtGui.QPixmap(resource_path("assets/setting.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         dialog.setWindowIcon(icon)
         if self.settings:
             for k, v in self.settings.items():
-                getattr(dialog.ui, k).setText(v)
+                # print(getattr(dialog.ui, k), type(getattr(dialog.ui, k)))
+                if isinstance(getattr(dialog.ui, k), QtWidgets.QLineEdit):
+                    getattr(dialog.ui, k).setText(v)
+                    continue
+                if isinstance(getattr(dialog.ui, k), QtWidgets.QComboBox):
+                    getattr(dialog.ui, k).setCurrentText(v)
+                    continue
         res = dialog.exec_()
         dialog.show()
         if res:
             self.settings = dict(
                 dwpath_led=dialog.ui.dwpath_led.text(),
+                ext_cb=dialog.ui.ext_cb.currentText(),
             )
             print(self.settings)
-        self.save_settings(dwpath_led=self.settings["dwpath_led"])
+        self.save_settings(dwpath_led=self.settings["dwpath_led"], ext_cb=self.settings["ext_cb"])
+
+    def open_about(self):
+        dialog = QtWidgets.QDialog()
+        dialog.ui = About()
+        dialog.ui.setupUi(dialog)
+
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(resource_path("assets/setting.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        dialog.setWindowIcon(icon)
+
+        dialog.exec_()
+        dialog.show()
 
     def update_sessionid(self, changed):
         ...
 
     def on_set_target(self, click):
-        self.trg_path = QtWidgets.QFileDialog.getExistingDirectory(
-            MainWindow, "Choose Directory", self.target_led.text()
-        )
+        self.trg_path = QtWidgets.QFileDialog.getExistingDirectory(MainWindow, "Choose Directory", self.target_led.text())
 
         print(self.trg_path.replace("/", "\\"))
         # if self.src_path.replace("/", "\\") in self.trg_path.replace("/", "\\"):
@@ -202,12 +235,11 @@ class UiMainWindow2(Ui_MainWindow):
         self.target_led.setText(self.trg_path.replace("/", "\\"))
         self.load_settings()
 
-    
     def on_count_changed(self, value):
         # print(value[0], type(value[0]), value[1], type(value[1]))
         # self.pbar.setFormat("%.2f %%" % value[0]/value[1])
 
-        val = int(value[0]/value[1]*100)
+        val = int(value[0] / value[1] * 100)
         self.pbar.setValue(val)
         self.task_btn.progress().setValue(val)
 
@@ -224,12 +256,18 @@ class UiMainWindow2(Ui_MainWindow):
                 "target_led": self.target_led.text(),
             }
         )
-        self.download_btn.setText("Cancel")
-        print(self.settings,)
-        self.download_process = ProcessDownload(self.settings)
-        self.download_process.count_changed.connect(self.on_count_changed)
-        self.download_process.start()
-
+        if self.download_btn.text() == "Download":
+            self.download_btn.setText("Cancel")
+            print(
+                self.settings,
+            )
+            self.download_process = ProcessDownload(self.settings)
+            self.download_process.count_changed.connect(self.on_count_changed)
+            self.download_process.start()
+        else:
+            self.download_btn.setText("Download")
+            self.download_process.exit()
+            self.download_process.terminate()
 
 
 if __name__ == "__main__":
@@ -241,7 +279,7 @@ if __name__ == "__main__":
     windows = QtGui.QWindow()
     ui = UiMainWindow2()
     ui.setupUi(MainWindow)
-    ui.extra_setupUi(MainWindow, windows)
+    ui.extra_setup_ui(MainWindow, windows)
     # windows.show()
     MainWindow.show()
     sys.exit(app.exec_())
