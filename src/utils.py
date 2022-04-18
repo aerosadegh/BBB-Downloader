@@ -18,9 +18,10 @@ def merge(
 
 
 class Download:
-    def __init__(self, base_url, sessionid, path) -> None:
+    def __init__(self, base_url, sessionid, path, extension="mp4") -> None:
         self.base_url = base_url.rstrip("/") + "/"  # settings["dwpath_led"].rstrip("/") + "/"
         self.sessionid = sessionid  # settings["sessionid"]
+        self.extension = extension  # settings["ext_cb"]
         self.path = path  # settings["dwpath_led"]
         if not os.path.exists(path):
             os.makedirs(path)
@@ -66,7 +67,7 @@ class Download:
                             yield (dld, total_length)
 
     def _get_webcams(self):
-        link = f"{self.base_url}{self.sessionid}/video/webcams.webm"   # Choice in Setting!
+        link = f"{self.base_url}{self.sessionid}/video/webcams.{self.extension}"
         print("link: ", link)
         filename = os.path.join(self.path, "webcams.mp4")
         resume_from = None
@@ -75,7 +76,7 @@ class Download:
         return Download._to_download(filename, link, resume_byte_pos=resume_from)
 
     def _get_deskshare(self):
-        link = f"{self.base_url}{self.sessionid}/deskshare/deskshare.webm"
+        link = f"{self.base_url}{self.sessionid}/deskshare/deskshare.{self.extension}"
         print("link: ", link)
         filename = os.path.join(self.path, "deskshare.mp4")
         resume_from = None
