@@ -1,5 +1,4 @@
 import os
-import sys
 import subprocess
 import requests
 
@@ -10,10 +9,15 @@ def merge(
     output: str = "presentation.mp4",
 ):
     # with open('test.log', 'wb') as fout:
-    cmd = f"""ffmpeg -i "{input1}" -i "{input2}" -c copy "{output}" -y"""
+    inp1 = input1.replace(' ', r'%20')
+    inp2 = input2.replace(' ', r'%20')
+    out = output.replace(' ', r'%20')
+    cmd = f"""ffmpeg -i {inp1} -i {inp2} -c copy {out} -y -v debug""".split()
+    for i, c in enumerate(cmd):
+        cmd[i] = c.replace("%20", " ")
     print(cmd)
     process = subprocess.Popen(
-        cmd.split(),
+        cmd,
         stdout=subprocess.PIPE,
     )
     return process.communicate()[0]
@@ -106,18 +110,18 @@ class Download:
 
 
 if __name__ == "__main__":
+    pass
+    # LINK = "https://conf2.anisa.co.ir/presentation/" + "7c73890a6bb99b872fce98138ab61735d96e3ddb-1646888881275" + "/video/webcams.mp4"
+    # BASEURL = "https://conf2.anisa.co.ir/presentation/"
+    # SESSION_ID = "7c73890a6bb99b872fce98138ab61735d96e3ddb-1646888881275"
+    # # path = 6
+    # dl = Download(BASEURL, SESSION_ID, ".")
 
-    LINK = "https://conf2.anisa.co.ir/presentation/" + "7c73890a6bb99b872fce98138ab61735d96e3ddb-1646888881275" + "/video/webcams.mp4"
-    BASEURL = "https://conf2.anisa.co.ir/presentation/"
-    SESSION_ID = "7c73890a6bb99b872fce98138ab61735d96e3ddb-1646888881275"
-    # path = 6
-    dl = Download(BASEURL, SESSION_ID, ".")
-
-    if input().strip() != "":
-        for itr in dl.get_iter_videos():
-            for (dnl, totallength) in itr:
-                sys.stdout.write(
-                    f"\r[{'=' * int(100 * dnl / totallength)}"
-                    f"{' ' * (100-int(100 * dnl / totallength))}] {int(100 * dnl / totallength):.0f}%"
-                )
-                sys.stdout.flush()
+    # if input().strip() != "":
+    #     for itr in dl.get_iter_videos():
+    #         for (dnl, totallength) in itr:
+    #             sys.stdout.write(
+    #                 f"\r[{'=' * int(100 * dnl / totallength)}"
+    #                 f"{' ' * (100-int(100 * dnl / totallength))}] {int(100 * dnl / totallength):.0f}%"
+    #             )
+    #             sys.stdout.flush()
