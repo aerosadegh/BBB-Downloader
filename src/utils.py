@@ -35,10 +35,12 @@ class Download:
         file_path,
         link,
         resume_byte_pos=None,
+        verbose=True
     ):
-        print(f"Downloading {file_path}")
         headers = {"Range": f"bytes={resume_byte_pos}-"} if resume_byte_pos is not None else None
-        print("headers:", headers)
+        if verbose:
+            print(f"Downloading {file_path}")
+            print("headers:", headers)
         response = requests.get(link, stream=True, headers=headers)
         total_length = response.headers.get("content-length")
         if total_length is None:  # no content length header
@@ -47,7 +49,8 @@ class Download:
             total_length = int(total_length)
             download_flag = True
             if os.path.exists(file_path):
-                print(os.path.getsize(file_path) == total_length)
+                if verbose:
+                    print("Download Completed?  ", os.path.getsize(file_path) == total_length)
                 if os.path.getsize(file_path) == total_length:
                     download_flag = False
                     yield (total_length, total_length)
@@ -57,9 +60,12 @@ class Download:
                     if total_length is None:  # no content length header
                         fout.write(response.content)
                     else:
-                        dld = 0 if resume_byte_pos is None else resume_byte_pos
                         total_length = int(total_length) if resume_byte_pos is None else int(total_length) + resume_byte_pos
-                        print(total_length, f"{total_length//1024//1024}MB")
+                        dld = 0 if resume_byte_pos is None else resume_byte_pos
+                        if verbose:
+                            print(f"Downloaded: {dld:12} bytes  ::  -h: {dld/1024/1024:.2f} MB")
+                            print(f"file size:  {total_length:12} bytes  ::  -h: {total_length/1024/1024:.2f} MB")
+
                         for data in response.iter_content(chunk_size=4096):
                             dld += len(data)
                             fout.write(data)
