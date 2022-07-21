@@ -10,6 +10,9 @@ from main_page import Ui_MainWindow
 
 from utils import Download
 
+MERGING = "Merging ..."
+DONE = "Done!"
+
 
 def resource_path(relative_path):
     """Get absolute path to resource, works for dev and for PyInstaller"""
@@ -49,9 +52,9 @@ class ProcessDownload(QThread):
                 self.count_changed.emit(
                     (dnl, totallength, files[iii], iii+1)
                 )  # f"{old_file} split to {num_parts} part", "", 30000)) dnl / totallength
-        self.count_changed.emit((1, 1, "Merging ...", len(files)+1))
+        self.count_changed.emit((1, 1, MERGING, len(files)+1))
         download.do_merge()
-        self.count_changed.emit((0, 1, "Done!", len(files)+2))
+        self.count_changed.emit((100, 1, DONE, len(files)+2))
 
         # for i, filepath in enumerate(files):
         #     if i == 0:
@@ -98,6 +101,7 @@ class UiMainWindow2(Ui_MainWindow):
         """
         Combine UI files
         """
+        self.setupUi(MainWindow)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(resource_path("assets/icon.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -208,7 +212,7 @@ class UiMainWindow2(Ui_MainWindow):
                 ext_cb=dialog.ui.ext_cb.currentText(),
             )
             print(self.settings)
-        self.save_settings(dwpath_led=self.settings["dwpath_led"], ext_cb=self.settings["ext_cb"])
+            self.save_settings(dwpath_led=self.settings["dwpath_led"], ext_cb=self.settings["ext_cb"])
 
     def open_about(self):
         dialog = QtWidgets.QDialog()
@@ -245,10 +249,16 @@ class UiMainWindow2(Ui_MainWindow):
         val = int(value[0] / value[1] * 100)
         self.pbar.setValue(val)
         self.task_btn.progress().setValue(val)
-        suff =  "/2" if value[3]<3 else f"/{value[3]}"
-        self.statusbar.showMessage(f"Stage {value[3]}{suff} :: {value[0]/1024/1024:.2f}MB/{value[1]/1024/1024:.2f} MB  {value[2]}", 70000)
-        if value[2] == "Done!":
+        suff =  "/3"
+        if value[2] == MERGING:
+            self.statusbar.showMessage(f"Stage {value[3]}{suff} :: {value[2]}", 70000)
+            self.pbar.setRange(0, 0)
+        elif value[2] == DONE:
             self.download_btn.setText("Download")
+            self.pbar.setRange(0, 10000)
+            self.statusbar.showMessage(f"{value[2]}", 70000)
+        else:
+            self.statusbar.showMessage(f"Stage {value[3]}{suff} :: {value[0]/1024/1024:.2f}MB/{value[1]/1024/1024:.2f} MB  {value[2]}", 70000)
 
     def on_donwload_clicked(self, clicked):
         print("Clicked!")
@@ -275,14 +285,10 @@ class UiMainWindow2(Ui_MainWindow):
 
 if __name__ == "__main__":
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
-    # QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
-    # QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
+
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    windows = QtGui.QWindow()
     ui = UiMainWindow2()
-    ui.setupUi(MainWindow)
-    ui.extra_setup_ui(MainWindow, windows)
-    # windows.show()
+    ui.extra_setup_ui(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
