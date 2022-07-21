@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '.\main.ui'
+# Form implementation generated from reading ui file '.\src\main.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.6
 #
@@ -56,7 +56,10 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.sessionno_sp, 0, 3, 1, 1)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.target_led = QtWidgets.QLineEdit(self.centralwidget)
+        self.target_led = QtWidgets.QComboBox(self.centralwidget)
+        self.target_led.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
+        self.target_led.setEditable(True)
+        self.target_led.setInsertPolicy(QtWidgets.QComboBox.InsertAtTop)
         self.target_led.setObjectName("target_led")
         self.horizontalLayout_2.addWidget(self.target_led)
         self.browse_btn = QtWidgets.QToolButton(self.centralwidget)

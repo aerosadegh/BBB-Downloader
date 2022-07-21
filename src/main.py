@@ -44,44 +44,17 @@ class ProcessDownload(QThread):
             path=os.path.join(self.params["target_led"], self.params["sessionno"]),
             extension=self.params["ext_cb"],
         )
-        # num_parts = 0
+
         files = ["webcams", "deskshare"]
 
         for iii, itr in enumerate(download.get_iter_videos()):
             for (dnl, totallength) in itr:
                 self.count_changed.emit(
                     (dnl, totallength, files[iii], iii + 1)
-                )  # f"{old_file} split to {num_parts} part", "", 30000)) dnl / totallength
+                )
         self.count_changed.emit((1, 1, MERGING, len(files) + 1))
         download.do_merge()
         self.count_changed.emit((1, 1, DONE, len(files) + 2))
-
-        # for i, filepath in enumerate(files):
-        #     if i == 0:
-        #         self.count_changed.emit((count, i, "", filepath, 30000))
-        #     else:
-        #         self.count_changed.emit(
-        #             (count, i, f"{old_file} split to {num_parts} part", filepath, 30000)
-        #         )
-        #     time.sleep(1)
-        #     count = (i + 1) / n * 100
-        #     print((i + 1), n, count)
-        #     try:
-        #         num_parts = convert.get_iter_videos()
-        #         old_file = filepath.replace("/", "\\").split("\\")[-1]
-        #     except AssertionError:
-        #         num_parts = f"Error"
-        # self.count_changed.emit((count, i, f"{old_file} split to {num_parts} part", "", 30000))
-        # time.sleep(5)
-        # self.count_changed.emit(
-        #     (
-        #         100,
-        #         n,
-        #         f"Process took ~{(time.time()-self.params['start_t0'])/60:.1f} (min)!",
-        #         "",
-        #         100000,
-        #     )
-        # )
 
 
 class UiMainWindow2(Ui_MainWindow):
@@ -113,7 +86,7 @@ class UiMainWindow2(Ui_MainWindow):
         self.actionAbout_BBB_Downloader.triggered.connect(self.open_about)
 
         self.sessionid_led.textChanged.connect(self.update_sessionid)
-        self.target_led.textChanged.connect(self.update_sessionid)
+        self.target_led.currentTextChanged.connect(self.update_sessionid)
         self.browse_btn.clicked.connect(self.on_set_target)
         self.download_btn.clicked.connect(self.on_donwload_clicked)
 
@@ -122,7 +95,7 @@ class UiMainWindow2(Ui_MainWindow):
         self.statuspbar.setVisible(True)
         self.statuspbar.setValue(5000)
 
-        self.target_led.setText(os.getcwd())
+        self.target_led.setCurrentText(os.getcwd())
         
 
         self.settings = {
@@ -158,7 +131,7 @@ class UiMainWindow2(Ui_MainWindow):
         if set(kwargs.keys()) > set(allowd_kw.values()):
             raise ValueError
 
-        filename = os.path.join(self.target_led.text(), ".bbbdwrc")
+        filename = os.path.join(self.target_led.currentText(), ".bbbdwrc")
         settings = {}
         if os.path.exists(filename):
             settings.update(dotenv_values(filename))
@@ -172,7 +145,7 @@ class UiMainWindow2(Ui_MainWindow):
                 fout.write(f"{k}={val}\n")
 
     def load_settings(self):
-        filename = os.path.join(self.target_led.text(), ".bbbdwrc")
+        filename = os.path.join(self.target_led.currentText(), ".bbbdwrc")
         if os.path.exists(filename):
             settings = dotenv_values(filename)
             print("LOADED!", settings)
@@ -199,11 +172,10 @@ class UiMainWindow2(Ui_MainWindow):
         dialog.setWindowIcon(icon)
         if self.settings:
             for k, v in self.settings.items():
-                # print(getattr(dialog.ui, k), type(getattr(dialog.ui, k)))
-                if isinstance(getattr(dialog.ui, k), QtWidgets.QLineEdit):
+                if isinstance(getattr(dialog.ui, k, False), QtWidgets.QLineEdit):
                     getattr(dialog.ui, k).setText(v)
                     continue
-                if isinstance(getattr(dialog.ui, k), QtWidgets.QComboBox):
+                if isinstance(getattr(dialog.ui, k, False), QtWidgets.QComboBox):
                     getattr(dialog.ui, k).setCurrentText(v)
                     continue
         res = dialog.exec_()
@@ -231,12 +203,14 @@ class UiMainWindow2(Ui_MainWindow):
     def update_sessionid(self, changed):
         self.pbar.setRange(0, 100)
         self.pbar.setValue(0)
+        self.load_settings()
 
     def on_set_target(self, click):
-        self.trg_path = QtWidgets.QFileDialog.getExistingDirectory(MainWindow, "Choose Directory", self.target_led.text())
+        self.trg_path = QtWidgets.QFileDialog.getExistingDirectory(MainWindow, "Choose Directory", self.target_led.currentText())
 
         print(self.trg_path.replace("/", "\\"))
-        self.target_led.setText(self.trg_path.replace("/", "\\"))
+        self.target_led.insertItem(0, self.trg_path.replace("/", "\\"))
+        self.target_led.setCurrentIndex(0)
         self.load_settings()
 
     def on_count_changed(self, value):
@@ -264,7 +238,7 @@ class UiMainWindow2(Ui_MainWindow):
             {
                 "sessionid": self.sessionid_led.text(),
                 "sessionno": self.sessionno_sp.text(),
-                "target_led": self.target_led.text(),
+                "target_led": self.target_led.currentText(),
             }
         )
         if self.download_btn.text() == "Download":
@@ -286,6 +260,7 @@ class UiMainWindow2(Ui_MainWindow):
         self.target_led.setEnabled(False)
         self.sessionno_sp.setEnabled(False)
         self.browse_btn.setEnabled(False)
+        self.actionSettings.setEnabled(False)
 
     def acquire_ui(self):
         self.pbar.setRange(0, 100)
@@ -293,6 +268,7 @@ class UiMainWindow2(Ui_MainWindow):
         self.target_led.setEnabled(True)
         self.sessionno_sp.setEnabled(True)
         self.browse_btn.setEnabled(True)
+        self.actionSettings.setEnabled(True)
         self.download_btn.setText("Download")
 
 
