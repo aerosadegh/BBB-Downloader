@@ -50,11 +50,11 @@ class ProcessDownload(QThread):
         for iii, itr in enumerate(download.get_iter_videos()):
             for (dnl, totallength) in itr:
                 self.count_changed.emit(
-                    (dnl, totallength, files[iii], iii+1)
+                    (dnl, totallength, files[iii], iii + 1)
                 )  # f"{old_file} split to {num_parts} part", "", 30000)) dnl / totallength
-        self.count_changed.emit((1, 1, MERGING, len(files)+1))
+        self.count_changed.emit((1, 1, MERGING, len(files) + 1))
         download.do_merge()
-        self.count_changed.emit((100, 1, DONE, len(files)+2))
+        self.count_changed.emit((1, 1, DONE, len(files) + 2))
 
         # for i, filepath in enumerate(files):
         #     if i == 0:
@@ -97,7 +97,7 @@ class UiMainWindow2(Ui_MainWindow):
         self.task_btn = None
         self.statuspbar = None
 
-    def extra_setup_ui(self, MainWindow, windows):
+    def extra_setup_ui(self, MainWindow):
         """
         Combine UI files
         """
@@ -113,6 +113,7 @@ class UiMainWindow2(Ui_MainWindow):
         self.actionAbout_BBB_Downloader.triggered.connect(self.open_about)
 
         self.sessionid_led.textChanged.connect(self.update_sessionid)
+        self.target_led.textChanged.connect(self.update_sessionid)
         self.browse_btn.clicked.connect(self.on_set_target)
         self.download_btn.clicked.connect(self.on_donwload_clicked)
 
@@ -122,6 +123,7 @@ class UiMainWindow2(Ui_MainWindow):
         self.statuspbar.setValue(5000)
 
         self.target_led.setText(os.getcwd())
+        
 
         self.settings = {
             "dwpath_led": "",
@@ -227,18 +229,13 @@ class UiMainWindow2(Ui_MainWindow):
         dialog.show()
 
     def update_sessionid(self, changed):
-        ...
+        self.pbar.setRange(0, 100)
+        self.pbar.setValue(0)
 
     def on_set_target(self, click):
         self.trg_path = QtWidgets.QFileDialog.getExistingDirectory(MainWindow, "Choose Directory", self.target_led.text())
 
         print(self.trg_path.replace("/", "\\"))
-        # if self.src_path.replace("/", "\\") in self.trg_path.replace("/", "\\"):
-        #     retval = self.show_msg_box(title="Same Path", msg_text="Source Path is same to Target Path", sub_msg="In the future, this will lead to a conflict between converted and unconverted files.\nDo you want to continue in this path?")
-        #     if retval==QtWidgets.QMessageBox.Yes:
-        #         pass
-        #     elif retval==QtWidgets.QMessageBox.No:
-        #         return
         self.target_led.setText(self.trg_path.replace("/", "\\"))
         self.load_settings()
 
@@ -249,16 +246,17 @@ class UiMainWindow2(Ui_MainWindow):
         val = int(value[0] / value[1] * 100)
         self.pbar.setValue(val)
         self.task_btn.progress().setValue(val)
-        suff =  "/3"
+        suff = "/3"
         if value[2] == MERGING:
             self.statusbar.showMessage(f"Stage {value[3]}{suff} :: {value[2]}", 70000)
             self.pbar.setRange(0, 0)
         elif value[2] == DONE:
-            self.download_btn.setText("Download")
-            self.pbar.setRange(0, 10000)
+            self.acquire_ui()
             self.statusbar.showMessage(f"{value[2]}", 70000)
         else:
-            self.statusbar.showMessage(f"Stage {value[3]}{suff} :: {value[0]/1024/1024:.2f}MB/{value[1]/1024/1024:.2f} MB  {value[2]}", 70000)
+            self.statusbar.showMessage(
+                f"Stage {value[3]}{suff} :: {value[0]/1024/1024:.2f}MB/{value[1]/1024/1024:.2f} MB  {value[2]}", 70000
+            )
 
     def on_donwload_clicked(self, clicked):
         print("Clicked!")
@@ -270,7 +268,7 @@ class UiMainWindow2(Ui_MainWindow):
             }
         )
         if self.download_btn.text() == "Download":
-            self.download_btn.setText("Cancel")
+            self.lock_ui()
             print(
                 self.settings,
             )
@@ -278,9 +276,24 @@ class UiMainWindow2(Ui_MainWindow):
             self.download_process.count_changed.connect(self.on_count_changed)
             self.download_process.start()
         else:
-            self.download_btn.setText("Download")
+            self.acquire_ui()
             self.download_process.exit()
             self.download_process.terminate()
+
+    def lock_ui(self):
+        self.download_btn.setText("Cancel")
+        self.sessionid_led.setEnabled(False)
+        self.target_led.setEnabled(False)
+        self.sessionno_sp.setEnabled(False)
+        self.browse_btn.setEnabled(False)
+
+    def acquire_ui(self):
+        self.pbar.setRange(0, 100)
+        self.sessionid_led.setEnabled(True)
+        self.target_led.setEnabled(True)
+        self.sessionno_sp.setEnabled(True)
+        self.browse_btn.setEnabled(True)
+        self.download_btn.setText("Download")
 
 
 if __name__ == "__main__":
