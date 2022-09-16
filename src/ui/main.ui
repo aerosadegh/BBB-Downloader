@@ -32,6 +32,9 @@
       </item>
       <item row="0" column="1">
        <widget class="QLineEdit" name="sessionid_led">
+        <property name="styleSheet">
+         <string notr="true">border: 1px solid red;</string>
+        </property>
         <property name="maxLength">
          <number>54</number>
         </property>
