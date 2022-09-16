@@ -79,6 +79,15 @@ class SettingsItr:
             return member
         raise StopIteration
 
+@dataclass()
+class Params:
+    dwpath: Optional[str] = ""
+    ext: Optional[str] = ""
+    session_id: Optional[str] = ""
+    session_num: Optional[str] = ""
+    target_path: Optional[str] = ""
+
+
 
 class ProcessDownload(QThread):
     """
@@ -87,17 +96,17 @@ class ProcessDownload(QThread):
 
     count_changed = pyqtSignal(tuple)
 
-    def __init__(self, params: dict) -> None:
+    def __init__(self, params: Params) -> None:
         super().__init__()
         self.params = params
 
     def run(self):
 
         download = Download(
-            base_url=self.params["dwpath_led"],
-            sessionid=self.params["sessionid"],
-            path=os.path.join(self.params["target_led"], self.params["sessionno"]),
-            extension=self.params["ext_cb"],
+            base_url=self.params.dwpath,
+            sessionid=self.params.session_id,
+            path=os.path.join(self.params.target_path, self.params.session_num),
+            extension=self.params.ext,
         )
 
         files = ["webcams", "deskshare"]
@@ -254,6 +263,10 @@ class UiMainWindow2(Ui_MainWindow):
     def update_sessionid(self, changed):
         self.pbar.setRange(0, 100)
         self.pbar.setValue(0)
+        if len(self.sessionid_led.text())==self.sessionid_led.maxLength():
+            self.sessionid_led.setStyleSheet("border: 1px solid green;")
+        else:
+            self.sessionid_led.setStyleSheet("border: 1px solid red;")
         self.load_settings()
 
     def on_set_target(self, click):
@@ -282,17 +295,20 @@ class UiMainWindow2(Ui_MainWindow):
 
     def on_donwload_clicked(self, clicked):
         print("Clicked!")
-        self.settings.update(
-            {
-                "sessionid": self.sessionid_led.text(),
-                "sessionno": self.sessionno_sp.text(),
-                "target_led": self.target_led.currentText(),
-            }
-        )
+        params = Params()
+        for elm in self.settings:
+            setattr(params, str.lower(elm.key), elm.value)
+        
+        # texts
+        params.session_id = self.sessionid_led.text()
+        params.session_num = self.sessionno_sp.text()
+        # currentTexts
+        params.target_path = self.target_led.currentText()
+
         if self.download_btn.text() == "Download":
             self.lock_ui()
-            print(self.settings)
-            self.download_process = ProcessDownload(self.settings)
+            print(params)
+            self.download_process = ProcessDownload(params)
             self.download_process.count_changed.connect(self.on_count_changed)
             self.download_process.start()
         else:
