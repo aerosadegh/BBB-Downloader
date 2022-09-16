@@ -176,7 +176,8 @@ class UiMainWindow2(Ui_MainWindow):
 
         content = f"### BBB Setting\n"
         for elm in self.settings:
-            if not elm.value: return
+            if not elm.value:
+                return
             content += f"{elm.key}={elm.value}\n"
 
         filename = os.path.join(self.target_led.currentText(), ".bbbdwrc")
@@ -290,9 +291,7 @@ class UiMainWindow2(Ui_MainWindow):
         )
         if self.download_btn.text() == "Download":
             self.lock_ui()
-            print(
-                self.settings,
-            )
+            print(self.settings)
             self.download_process = ProcessDownload(self.settings)
             self.download_process.count_changed.connect(self.on_count_changed)
             self.download_process.start()

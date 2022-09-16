@@ -1,3 +1,7 @@
+[tool.yapf]
+column_limit = 140
+
+
 [tool.isort]
 profile = "black"
 skip_glob = ["**/.git*", "**/.env*", "**/venv*", "**/venvwsl*","**/docs*","**/migrations*"]
@@ -52,7 +56,3 @@ max-statements=50
 
 # Minimum number of public methods for a class (see R0903).
 min-public-methods=1
-
-
-[tool.black]
-line-length = 140
