@@ -1,5 +1,9 @@
 import sys
 import os
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any, List, Optional
+
 from dotenv import dotenv_values
 from PyQt5 import QtGui, QtWidgets, QtWinExtras
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -23,6 +27,57 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
 
     return os.path.join(base_path, relative_path)
+
+
+class Extension(Enum):
+    AUTO: str = "auto"
+    MP4: str = "mp4"
+    WEBM: str = "webm"
+
+    @classmethod
+    def default_extension(cls):
+        return cls.MP4.value
+
+    @classmethod
+    def values(cls):
+        return (getattr(__class__, label).value for label in cls.__annotations__)
+
+    @classmethod
+    def names(cls):
+        return (getattr(__class__, label).name for label in cls.__annotations__)
+
+
+@dataclass
+class Element:
+    element: str
+    key: str
+    value: Any
+
+
+@dataclass
+class Settings:
+    elements: Optional[List[Element]]
+
+    def __iter__(self):
+        return SettingsItr(self)
+
+
+class SettingsItr:
+    def __init__(self, settings: Settings):
+        self._settings = settings
+        self._elms = settings.elements
+        self._elm_count = len(self._elms)
+        self._current_index = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._current_index < self._elm_count:
+            member = self._elms[self._current_index]
+            self._current_index += 1
+            return member
+        raise StopIteration
 
 
 class ProcessDownload(QThread):
@@ -49,9 +104,7 @@ class ProcessDownload(QThread):
 
         for iii, itr in enumerate(download.get_iter_videos()):
             for (dnl, totallength) in itr:
-                self.count_changed.emit(
-                    (dnl, totallength, files[iii], iii + 1)
-                )
+                self.count_changed.emit((dnl, totallength, files[iii], iii + 1))
         self.count_changed.emit((1, 1, MERGING, len(files) + 1))
         download.do_merge()
         self.count_changed.emit((1, 1, DONE, len(files) + 2))
@@ -79,7 +132,6 @@ class UiMainWindow2(Ui_MainWindow):
         icon.addPixmap(QtGui.QPixmap(resource_path("assets/icon.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
 
-        self.settings = dict()
         self.task_btn = QtWinExtras.QWinTaskbarButton(MainWindow)
         self.task_btn.setOverlayIcon(QtGui.QIcon("process.png"))
         self.actionSettings.triggered.connect(self.open_setting)
@@ -96,13 +148,10 @@ class UiMainWindow2(Ui_MainWindow):
         self.statuspbar.setValue(5000)
 
         self.target_led.setCurrentText(os.getcwd())
-        
 
-        self.settings = {
-            "dwpath_led": "",
-        }
+        # self.settings = Setting()
 
-        self.load_settings()
+        # self.load_settings()
 
     def show_msg_box(
         self,
@@ -123,44 +172,39 @@ class UiMainWindow2(Ui_MainWindow):
         retval = msg.exec_()
         return retval
 
-    def save_settings(self, **kwargs):
-        allowd_kw = {
-            "dwpath_led": "DWPATH",
-            "ext_cb": "EXT",
-        }
-        if set(kwargs.keys()) > set(allowd_kw.values()):
-            raise ValueError
+    def save_settings(self):
+
+        content = f"### BBB Setting\n"
+        for elm in self.settings:
+            if not elm.value: return
+            content += f"{elm.key}={elm.value}\n"
 
         filename = os.path.join(self.target_led.currentText(), ".bbbdwrc")
-        settings = {}
-        if os.path.exists(filename):
-            settings.update(dotenv_values(filename))
-
-        for k, val in kwargs.items():
-            settings[allowd_kw[k]] = val
-
         with open(filename, "w", encoding="utf-8") as fout:
-            fout.write(f"### BBB Setting\n")
-            for k, val in settings.items():
-                fout.write(f"{k}={val}\n")
+            fout.write(content)
 
     def load_settings(self):
         filename = os.path.join(self.target_led.currentText(), ".bbbdwrc")
+        settings = {}
         if os.path.exists(filename):
             settings = dotenv_values(filename)
             print("LOADED!", settings)
-        else:
+
+        self.input_setting = (
+            Element("dwpath_led", "DWPATH", ""),
+            Element("ext_cb", "EXT", "mp4"),
+        )
+        if not settings:
+            self.settings = Settings(self.input_setting)
             return
-        allowd_kw = {
-            "DWPATH": "dwpath_led",
-            "EXT": "ext_cb",
-        }
-        # if set(settings.keys()) > set(allowd_kw.keys()):
-        #     # raise ValueError
-        #     miss_setting = set(allowd_kw.keys()) - set(settings.keys())
-        # print("miss_settings:", miss_setting)
-        for k, v in allowd_kw.items():
-            self.settings[v] = settings[k]
+
+        for elm in self.input_setting:
+            if elm.key == "EXT":
+                if not settings[elm.key] in Extension.values():
+                    settings[elm.key] = Extension.default_extension()
+            elm.value = settings[elm.key]
+
+        self.settings = Settings(self.input_setting)
 
     def open_setting(self):
         dialog = QtWidgets.QDialog()
@@ -170,23 +214,29 @@ class UiMainWindow2(Ui_MainWindow):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(resource_path("assets/setting.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         dialog.setWindowIcon(icon)
-        if self.settings:
-            for k, v in self.settings.items():
-                if isinstance(getattr(dialog.ui, k, False), QtWidgets.QLineEdit):
-                    getattr(dialog.ui, k).setText(v)
-                    continue
-                if isinstance(getattr(dialog.ui, k, False), QtWidgets.QComboBox):
-                    getattr(dialog.ui, k).setCurrentText(v)
-                    continue
+        for elm in self.settings:
+            if isinstance(getattr(dialog.ui, elm.element, False), QtWidgets.QLineEdit):
+                getattr(dialog.ui, elm.element).setText(elm.value)
+                continue
+            if isinstance(getattr(dialog.ui, elm.element, False), QtWidgets.QComboBox):
+                getattr(dialog.ui, elm.element).setCurrentText(elm.value)
+                continue
         res = dialog.exec_()
         dialog.show()
         if res:
-            self.settings = dict(
-                dwpath_led=dialog.ui.dwpath_led.text(),
-                ext_cb=dialog.ui.ext_cb.currentText(),
-            )
+            for elm in self.settings:
+                if isinstance(getattr(dialog.ui, elm.element, False), QtWidgets.QLineEdit):
+                    elm.value = getattr(dialog.ui, elm.element).text()
+                    continue
+                if isinstance(getattr(dialog.ui, elm.element, False), QtWidgets.QComboBox):
+                    elm.value = getattr(dialog.ui, elm.element).currentText()
+                    continue
+
+            # self.settings.elements = getattr(dialog.ui, elm.element dwpath_led.text(),
+            #     ext_cb=dialog.ui.ext_cb.currentText(),
+            # )
             print(self.settings)
-            self.save_settings(dwpath_led=self.settings["dwpath_led"], ext_cb=self.settings["ext_cb"])
+            self.save_settings()
 
     def open_about(self):
         dialog = QtWidgets.QDialog()
@@ -211,11 +261,8 @@ class UiMainWindow2(Ui_MainWindow):
         print(self.trg_path.replace("/", "\\"))
         self.target_led.insertItem(0, self.trg_path.replace("/", "\\"))
         self.target_led.setCurrentIndex(0)
-        self.load_settings()
 
     def on_count_changed(self, value):
-        # print(value[0], type(value[0]), value[1], type(value[1]))
-        # self.pbar.setFormat("%.2f %%" % value[0]/value[1])
 
         val = int(value[0] / value[1] * 100)
         self.pbar.setValue(val)
