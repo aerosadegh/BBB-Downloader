@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>561</width>
-    <height>142</height>
+    <width>527</width>
+    <height>150</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,13 +23,6 @@
       <property name="rightMargin">
        <number>5</number>
       </property>
-      <item row="1" column="0">
-       <widget class="QLabel" name="target_lbl">
-        <property name="text">
-         <string>Target</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="sessionid_lbl">
         <property name="text">
@@ -38,65 +31,29 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="sessionid_led"/>
-      </item>
-      <item row="2" column="0" colspan="4">
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QProgressBar" name="pbar">
-          <property name="locale">
-           <locale language="English" country="UnitedStates"/>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="download_btn">
-          <property name="text">
-           <string>Download</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="0" column="2">
-       <widget class="QLabel" name="sessionno_lbl">
-        <property name="text">
-         <string># Session</string>
+       <widget class="QLineEdit" name="sessionid_led">
+        <property name="maxLength">
+         <number>54</number>
         </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="QSpinBox" name="sessionno_sp">
-        <property name="minimumSize">
-         <size>
-          <width>53</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="locale">
-         <locale language="English" country="UnitedStates"/>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>1000</number>
+        <property name="cursorMoveStyle">
+         <enum>Qt::VisualMoveStyle</enum>
         </property>
        </widget>
       </item>
       <item row="1" column="1" colspan="3">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QLineEdit" name="target_led"/>
+         <widget class="QComboBox" name="target_led">
+          <property name="locale">
+           <locale language="English" country="UnitedStates"/>
+          </property>
+          <property name="editable">
+           <bool>true</bool>
+          </property>
+          <property name="insertPolicy">
+           <enum>QComboBox::InsertAtTop</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QToolButton" name="browse_btn">
@@ -125,6 +82,66 @@
         </item>
        </layout>
       </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="target_lbl">
+        <property name="text">
+         <string>Target</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QSpinBox" name="sessionno_sp">
+        <property name="minimumSize">
+         <size>
+          <width>53</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="locale">
+         <locale language="English" country="UnitedStates"/>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="sessionno_lbl">
+        <property name="text">
+         <string># Session</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="4">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QProgressBar" name="pbar">
+          <property name="locale">
+           <locale language="English" country="UnitedStates"/>
+          </property>
+          <property name="value">
+           <number>0</number>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="download_btn">
+          <property name="text">
+           <string>Download</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
      </layout>
     </item>
    </layout>
@@ -134,7 +151,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>561</width>
+     <width>527</width>
      <height>22</height>
     </rect>
    </property>

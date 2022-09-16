@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '.\src\settings.ui'
+# Form implementation generated from reading ui file '.\ui\settings.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.6
 #
@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(306, 74)
+        Dialog.resize(306, 93)
         self.gridLayout_2 = QtWidgets.QGridLayout(Dialog)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.gridLayout = QtWidgets.QGridLayout()
@@ -49,9 +49,10 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowTitle(_translate("Dialog", "Setting"))
         self.ext_lbl.setText(_translate("Dialog", "Extension"))
-        self.dpath_lbl.setText(_translate("Dialog", "Download Path"))
+        self.dwpath_led.setPlaceholderText(_translate("Dialog", "https://example.com/presentation/"))
+        self.dpath_lbl.setText(_translate("Dialog", "Download BaseUrl"))
         self.ext_cb.setItemText(0, _translate("Dialog", "Auto Check"))
         self.ext_cb.setItemText(1, _translate("Dialog", "mp4"))
         self.ext_cb.setItemText(2, _translate("Dialog", "webm"))

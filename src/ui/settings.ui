@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>306</width>
-    <height>74</height>
+    <height>93</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Setting</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
@@ -34,12 +34,16 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="dwpath_led"/>
+      <widget class="QLineEdit" name="dwpath_led">
+       <property name="placeholderText">
+        <string>https://example.com/presentation/</string>
+       </property>
+      </widget>
      </item>
      <item row="0" column="0">
       <widget class="QLabel" name="dpath_lbl">
        <property name="text">
-        <string>Download Path</string>
+        <string>Download BaseUrl</string>
        </property>
       </widget>
      </item>
