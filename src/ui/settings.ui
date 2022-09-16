@@ -34,12 +34,16 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="dwpath_led"/>
+      <widget class="QLineEdit" name="dwpath_led">
+       <property name="placeholderText">
+        <string>https://example.com/presentation/</string>
+       </property>
+      </widget>
      </item>
      <item row="0" column="0">
       <widget class="QLabel" name="dpath_lbl">
        <property name="text">
-        <string>Download Path</string>
+        <string>Download BaseUrl</string>
        </property>
       </widget>
      </item>
