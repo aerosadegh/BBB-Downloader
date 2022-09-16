@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '.\settings.ui'
+# Form implementation generated from reading ui file '.\ui\settings.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.6
 #
@@ -51,7 +51,8 @@ class Ui_Dialog(object):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Setting"))
         self.ext_lbl.setText(_translate("Dialog", "Extension"))
-        self.dpath_lbl.setText(_translate("Dialog", "Download Path"))
+        self.dwpath_led.setPlaceholderText(_translate("Dialog", "https://example.com/presentation/"))
+        self.dpath_lbl.setText(_translate("Dialog", "Download BaseUrl"))
         self.ext_cb.setItemText(0, _translate("Dialog", "Auto Check"))
         self.ext_cb.setItemText(1, _translate("Dialog", "mp4"))
         self.ext_cb.setItemText(2, _translate("Dialog", "webm"))
